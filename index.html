@@ -241,18 +241,24 @@
     }
     .card-og-img.loaded ~ .card-og-emoji { opacity: 0; }
 
-    /* ─── Custom image overlay (owner upload) ────────────────────────── */
-    .card-img-upload-btn {
+    /* ─── Custom image overlay (owner upload / paste) ────────────────── */
+    .card-img-actions {
       position: absolute; bottom: 8px; left: 8px; z-index: 3;
-      display: none;
+      display: none; gap: 4px;
+    }
+    .card:hover .card-img-actions { display: flex; }
+    .card-img-upload-btn, .card-img-paste-btn {
       background: rgba(255,255,255,.88); color: var(--pink-600);
       border: 1.5px solid var(--pink-200); border-radius: 100px;
       font-size: .72rem; font-weight: 600; padding: 4px 10px; cursor: pointer;
-      transition: background var(--transition);
+      transition: background var(--transition); white-space: nowrap;
     }
-    .card-img-upload-btn:hover { background: white; }
-    .card:hover .card-img-upload-btn { display: block; }
+    .card-img-upload-btn:hover, .card-img-paste-btn:hover { background: white; }
     .card-img-upload-input { display: none; }
+    .card-img-paste-btn.waiting {
+      background: var(--pink-100); border-color: var(--pink-400); color: var(--pink-600);
+      outline: 2px solid var(--pink-300);
+    }
     .card-img-remove-btn {
       position: absolute; top: 8px; right: 8px; z-index: 3;
       display: none;
@@ -866,7 +872,10 @@ function cardHTML(g) {
         ? `<img class="card-og-img loaded" src="${remoteState.images[g.id]}" alt="" />`
         : g.link ? `<img class="card-og-img" data-og-src="${WORKER_URL.replace('/progress','/og')}?url=${encodeURIComponent(g.link)}" alt="" loading="lazy" />` : ''}
       <span class="card-og-emoji">${g.emoji || '🎁'}</span>
-      ${isOwner ? `<label class="card-img-upload-btn" title="Upload image">📷 ${remoteState.images[g.id] ? 'Change' : 'Upload'} image<input class="card-img-upload-input" type="file" accept="image/*" data-action="upload-img" data-id="${g.id}" /></label>` : ''}
+      ${isOwner ? `<div class="card-img-actions">
+        <label class="card-img-upload-btn" title="Upload image">📷 ${remoteState.images[g.id] ? 'Change' : 'Upload'}<input class="card-img-upload-input" type="file" accept="image/*" data-action="upload-img" data-id="${g.id}" /></label>
+        <button class="card-img-paste-btn" data-action="paste-img" data-id="${g.id}" title="Paste image (Ctrl+V)">📋 Paste</button>
+      </div>` : ''}
       ${isOwner && remoteState.images[g.id] ? `<button class="card-img-remove-btn" data-action="remove-img" data-id="${g.id}" title="Remove custom image">✕</button>` : ''}
     </div>
     <div class="card-body">
@@ -917,6 +926,29 @@ function attachCardListeners() {
       remoteState.images[id] = dataUrl; // update local cache so card re-renders immediately
       renderAll();
       showToast('🖼️ Image saved!');
+    });
+  });
+
+  // paste-img: click to arm, then Ctrl+V anywhere saves to that card
+  document.querySelectorAll('[data-action="paste-img"]').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      // Disarm if already waiting on this button
+      if (pasteTarget && pasteTarget.btn === btn) {
+        pasteTarget.btn.classList.remove('waiting');
+        pasteTarget.btn.textContent = '📋 Paste';
+        pasteTarget = null;
+        return;
+      }
+      // Disarm any previous target
+      if (pasteTarget) {
+        pasteTarget.btn.classList.remove('waiting');
+        pasteTarget.btn.textContent = '📋 Paste';
+      }
+      pasteTarget = { id: btn.dataset.id, btn };
+      btn.classList.add('waiting');
+      btn.textContent = '📋 Paste now…';
+      showToast('📋 Now paste your image (Ctrl+V)', 4000);
     });
   });
 
@@ -1284,6 +1316,43 @@ toggleBtn.addEventListener('click', () => {
   toggleBtn.setAttribute('aria-checked', showBought);
   renderAll();
 });
+
+/* ================================================================
+   PASTE HANDLER  (global — only active when a paste target is armed)
+   ================================================================ */
+document.addEventListener('paste', async e => {
+  if (!pasteTarget) return;
+  const items = e.clipboardData && e.clipboardData.items;
+  if (!items) return;
+  let file = null;
+  for (const item of items) {
+    if (item.type.startsWith('image/')) { file = item.getAsFile(); break; }
+  }
+  if (!file) { showToast('⚠️ No image found in clipboard'); return; }
+
+  const { id, btn } = pasteTarget;
+  pasteTarget = null;
+  btn.classList.remove('waiting');
+  btn.textContent = '📋 Paste';
+
+  showToast('⏳ Compressing image…');
+  const dataUrl = await compressImage(file);
+  if (!dataUrl) { showToast('❌ Could not read image'); return; }
+  try {
+    const r = await fetch(IMAGE_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, dataUrl }),
+    });
+    if (!r.ok) throw new Error(await r.text());
+  } catch (err) { showToast('❌ Failed to save image'); console.warn(err); return; }
+  remoteState.images[id] = dataUrl;
+  renderAll();
+  showToast('🖼️ Image saved!');
+});
+
+// pasteTarget lives outside attachCardListeners so it survives re-renders
+let pasteTarget = null;
 
 /* ================================================================
    INIT
