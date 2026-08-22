@@ -243,7 +243,7 @@
 
     /* ─── Custom image overlay (owner upload / paste) ────────────────── */
     .card-img-actions {
-      position: absolute; bottom: 8px; left: 8px; z-index: 3;
+      position: absolute; bottom: 40px; left: 8px; z-index: 5;
       display: none; gap: 4px;
     }
     .card:hover .card-img-actions { display: flex; }
@@ -347,9 +347,25 @@
       background: var(--set-bg); border: 1px solid var(--set-border);
       border-radius: 100px; padding: 3px 9px; width: fit-content;
     }
-    .card-footer { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 4px; }
-    .card-price { font-size: 1.15rem; font-weight: 700; color: var(--pink-600); }
-    .card-price.free { color: #2e7d32; font-size: .9rem; }
+    /* ─── Price chip — floats over image bottom-left ─────────────────── */
+    .card-price-chip {
+      position: absolute; bottom: 10px; left: 10px; z-index: 4;
+      background: rgba(252, 228, 236, 0.92);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      border: 1px solid rgba(245, 198, 218, 0.7);
+      border-radius: 100px;
+      padding: 4px 11px;
+      font-family: 'Inter', sans-serif;
+      font-size: .82rem; font-weight: 700;
+      color: var(--pink-600);
+      box-shadow: 0 2px 8px rgba(180,60,120,.12);
+      pointer-events: none;
+      line-height: 1;
+    }
+    .card-price-chip.free { color: #2e7d32; font-size: .75rem; }
+
+    .card-footer { display: flex; align-items: center; justify-content: flex-end; gap: 8px; margin-top: 4px; }
 
     .card-actions { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
 
@@ -979,6 +995,7 @@ function cardHTML(g) {
         <button class="card-img-paste-btn" data-action="paste-img" data-id="${g.id}" title="Paste image (Ctrl+V)">📋 Paste</button>
       </div>` : ''}
       ${isOwner && remoteState.images[g.id] ? `<button class="card-img-remove-btn" data-action="remove-img" data-id="${g.id}" title="Remove custom image">✕</button>` : ''}
+      ${g.price ? `<span class="card-price-chip">$${Number(g.price).toFixed(2)}</span>` : `<span class="card-price-chip free">Free</span>`}
     </div>
     <div class="card-body">
       <div class="card-category-row">
@@ -989,7 +1006,6 @@ function cardHTML(g) {
       ${g.set ? `<span class="card-set-tag"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>${g.set}</span>` : ''}
       ${g.desc ? `<p class="card-desc">${g.desc}</p>` : ''}
       <div class="card-footer">
-        ${formatPrice(g.price)}
         <div class="card-actions">
           ${g.link ? `<a href="${g.link}" target="_blank" rel="noopener" class="btn-view" aria-label="View ${g.name}">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
@@ -1001,7 +1017,7 @@ function cardHTML(g) {
             : ''}
           ${isBought
             ? `<button class="btn btn-undo" data-action="undo" data-id="${g.id}">↩ Undo</button>`
-            : `<button class="btn btn-primary" data-action="buy" data-id="${g.id}">🎀 I'll get this!</button>`}
+            : `<button class="btn btn-primary" data-action="buy" data-id="${g.id}">I'll get this!</button>`}
           ${isOwner ? `<button class="btn btn-delete" data-action="delete" data-id="${g.id}" title="Delete gift">🗑</button>` : ''}
         </div>
       </div>
@@ -1067,8 +1083,9 @@ function attachCardListeners() {
       if (!gift) return;
 
       if (action === 'buy') {
+        launchConfetti(btn);
         remoteState.bought[id] = true;
-        showToast(`🎀 Claimed — ${gift.name}!`);
+        showToast(`Claimed — ${gift.name}!`);
         await saveState(); renderAll();
       } else if (action === 'undo') {
         delete remoteState.bought[id];
@@ -1413,6 +1430,75 @@ toggleBtn.addEventListener('click', () => {
   toggleBtn.setAttribute('aria-checked', showBought);
   renderAll();
 });
+
+/* ================================================================
+   CONFETTI
+   ================================================================ */
+function launchConfetti(triggerEl) {
+  const rect   = triggerEl.getBoundingClientRect();
+  const originX = rect.left + rect.width  / 2;
+  const originY = rect.top  + rect.height / 2;
+
+  const canvas = document.createElement('canvas');
+  canvas.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:99999;';
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
+  document.body.appendChild(canvas);
+  const ctx = canvas.getContext('2d');
+
+  const COLORS = ['#e91e8c','#ff4d99','#f59e0b','#a78bfa','#34d399','#60a5fa','#fb923c','#f472b6'];
+  const COUNT  = 90;
+  const particles = Array.from({ length: COUNT }, () => {
+    const angle  = (Math.random() * 360) * Math.PI / 180;
+    const speed  = 4 + Math.random() * 8;
+    const size   = 5 + Math.random() * 6;
+    const shape  = Math.random() < 0.5 ? 'rect' : 'circle';
+    return {
+      x: originX, y: originY,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed - 4, // slight upward bias
+      color: COLORS[Math.floor(Math.random() * COLORS.length)],
+      alpha: 1, size,
+      rotation: Math.random() * 360,
+      rotSpeed: (Math.random() - 0.5) * 12,
+      gravity: 0.25 + Math.random() * 0.15,
+      shape,
+      w: size, h: size * (0.4 + Math.random() * 0.6),
+    };
+  });
+
+  let frame;
+  function tick() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    let alive = 0;
+    for (const p of particles) {
+      p.vy += p.gravity;
+      p.vx *= 0.99;
+      p.x  += p.vx;
+      p.y  += p.vy;
+      p.rotation += p.rotSpeed;
+      p.alpha -= 0.018;
+      if (p.alpha <= 0) continue;
+      alive++;
+      ctx.save();
+      ctx.globalAlpha = p.alpha;
+      ctx.fillStyle = p.color;
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rotation * Math.PI / 180);
+      if (p.shape === 'rect') {
+        ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+      } else {
+        ctx.beginPath();
+        ctx.arc(0, 0, p.size / 2, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+    if (alive > 0) frame = requestAnimationFrame(tick);
+    else canvas.remove();
+  }
+  frame = requestAnimationFrame(tick);
+}
 
 /* ================================================================
    PASTE HANDLER  (global — only active when a paste target is armed)
