@@ -1,0 +1,1266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>✨ Livi's Wish List</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    /* ─── Design Tokens ─────────────────────────────────────────────── */
+    :root {
+      --pink-50:  #fff0f5;
+      --pink-100: #ffe0ec;
+      --pink-200: #ffb3d1;
+      --pink-300: #ff80b5;
+      --pink-400: #ff4d99;
+      --pink-500: #e91e8c;
+      --pink-600: #c2185b;
+      --blush:    #fce4ec;
+      --cream:    #fffaf8;
+      --gold:     #f59e0b;
+      --gold-bg:  #fffbeb;
+      --gold-border: #fde68a;
+      --red-soft: #fff1f0;
+      --red-border: #ffd6d0;
+      --red-text: #c0392b;
+      --event-bg: #f0f7ff;
+      --event-border: #bfdbfe;
+      --event-text: #1d4ed8;
+      --set-bg:   #f5f0ff;
+      --set-border: #ddd6fe;
+      --set-text: #7c3aed;
+      --text-primary:   #2d1b2e;
+      --text-secondary: #7b4f6e;
+      --text-muted:     #b08098;
+      --border:   #f5c6da;
+      --border-soft: #fce0eb;
+      --shadow-sm: 0 1px 3px rgba(180,60,120,.08), 0 1px 2px rgba(180,60,120,.06);
+      --shadow-md: 0 4px 16px rgba(180,60,120,.12), 0 2px 6px rgba(180,60,120,.08);
+      --shadow-lg: 0 12px 40px rgba(180,60,120,.18), 0 4px 12px rgba(180,60,120,.10);
+      --radius-sm: 10px;
+      --radius-md: 16px;
+      --radius-lg: 24px;
+      --radius-xl: 32px;
+      --transition: 200ms cubic-bezier(.4,0,.2,1);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--cream);
+      color: var(--text-primary);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background:
+        radial-gradient(ellipse 60% 40% at 10% 0%, rgba(255,180,220,.35) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 50% at 90% 100%, rgba(252,200,230,.30) 0%, transparent 60%),
+        radial-gradient(ellipse 30% 30% at 50% 50%, rgba(255,240,248,.40) 0%, transparent 70%);
+      pointer-events: none; z-index: 0;
+    }
+
+    /* ─── Layout ─────────────────────────────────────────────────────── */
+    .page { position: relative; z-index: 1; max-width: 1200px; margin: 0 auto; padding: 0 24px 80px; }
+
+    /* ─── Header ─────────────────────────────────────────────────────── */
+    header { text-align: center; padding: 56px 0 40px; }
+    header h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2.2rem, 5vw, 3.6rem); font-weight: 600;
+      color: var(--text-primary); line-height: 1.15; margin-bottom: 12px;
+    }
+    header h1 em { font-style: italic; color: var(--pink-500); }
+    header p { font-size: 1rem; color: var(--text-secondary); font-weight: 300; line-height: 1.6; max-width: 460px; margin: 0 auto 28px; }
+    .header-stats {
+      display: inline-flex; gap: 24px; align-items: center;
+      background: white; border: 1px solid var(--border-soft);
+      border-radius: 100px; padding: 10px 24px; box-shadow: var(--shadow-sm);
+    }
+    .stat { font-size: .85rem; color: var(--text-secondary); }
+    .stat strong { color: var(--pink-500); font-weight: 600; }
+    .stat-divider { width: 1px; height: 16px; background: var(--border); }
+
+    /* ─── Owner bar ──────────────────────────────────────────────────── */
+    .owner-bar {
+      display: none;
+      align-items: center; justify-content: space-between; gap: 12px;
+      background: linear-gradient(135deg, #fff0f5 0%, #fce4ec 100%);
+      border: 1px solid var(--pink-200); border-radius: var(--radius-md);
+      padding: 12px 20px; margin-bottom: 16px;
+      font-size: .85rem; color: var(--pink-600); font-weight: 500;
+    }
+    .owner-bar.visible { display: flex; }
+    .owner-bar-left { display: flex; align-items: center; gap: 8px; }
+    .owner-bar svg { width: 16px; height: 16px; flex-shrink: 0; }
+
+    /* ─── Controls ───────────────────────────────────────────────────── */
+    .controls {
+      background: white; border: 1px solid var(--border-soft);
+      border-radius: var(--radius-lg); padding: 20px 24px;
+      margin-bottom: 28px; box-shadow: var(--shadow-sm);
+      display: flex; flex-wrap: wrap; gap: 12px; align-items: center;
+    }
+    .search-wrap { flex: 1; min-width: 200px; position: relative; }
+    .search-wrap svg { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted); width: 16px; height: 16px; pointer-events: none; }
+    .search-wrap input {
+      width: 100%; padding: 10px 14px 10px 40px;
+      border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+      font-family: 'Inter', sans-serif; font-size: .9rem; color: var(--text-primary);
+      background: var(--pink-50); outline: none;
+      transition: border-color var(--transition), box-shadow var(--transition);
+    }
+    .search-wrap input:focus { border-color: var(--pink-400); box-shadow: 0 0 0 3px rgba(233,30,140,.10); }
+    .search-wrap input::placeholder { color: var(--text-muted); }
+    .filter-select {
+      padding: 10px 32px 10px 14px; border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm); font-family: 'Inter', sans-serif;
+      font-size: .9rem; color: var(--text-secondary); background: var(--pink-50);
+      outline: none; cursor: pointer; transition: border-color var(--transition);
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23b08098' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 12px center; min-width: 140px;
+    }
+    .filter-select:focus { border-color: var(--pink-400); }
+    .filter-pills { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    .pill {
+      padding: 7px 14px; border-radius: 100px; font-size: .82rem; font-weight: 500;
+      border: 1.5px solid var(--border); background: var(--pink-50); color: var(--text-secondary);
+      cursor: pointer; transition: all var(--transition); white-space: nowrap;
+      display: inline-flex; align-items: center; gap: 5px;
+    }
+    .pill:hover { border-color: var(--pink-300); color: var(--pink-500); background: var(--pink-100); }
+    .pill.active { border-color: var(--pink-400); background: var(--pink-400); color: white; }
+    .pill-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; opacity: .7; }
+    .controls-right { display: flex; align-items: center; gap: 12px; margin-left: auto; flex-wrap: wrap; }
+    .toggle-wrap { display: flex; align-items: center; gap: 8px; }
+    .toggle-label { font-size: .82rem; color: var(--text-secondary); white-space: nowrap; }
+    .toggle {
+      width: 38px; height: 22px; background: var(--border); border-radius: 100px;
+      cursor: pointer; position: relative; transition: background var(--transition);
+      border: none; outline: none; flex-shrink: 0;
+    }
+    .toggle.on { background: var(--pink-400); }
+    .toggle::after {
+      content: ''; position: absolute; top: 3px; left: 3px;
+      width: 16px; height: 16px; border-radius: 50%; background: white;
+      transition: transform var(--transition); box-shadow: 0 1px 3px rgba(0,0,0,.15);
+    }
+    .toggle.on::after { transform: translateX(16px); }
+
+    /* ─── Grid ───────────────────────────────────────────────────────── */
+    .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 20px; }
+    @media (max-width: 1200px) { .grid { grid-template-columns: repeat(4, 1fr); } }
+    @media (max-width: 900px)  { .grid { grid-template-columns: repeat(3, 1fr); } }
+    @media (max-width: 600px)  { .grid { grid-template-columns: 1fr; } }
+
+    /* ─── Set group header ───────────────────────────────────────────── */
+    .set-header {
+      grid-column: 1 / -1;
+      display: flex; align-items: center; gap: 12px;
+      margin-top: 12px; margin-bottom: -4px;
+    }
+    .set-header-line { flex: 1; height: 1px; background: var(--set-border); }
+    .set-header-label {
+      display: flex; align-items: center; gap: 6px;
+      font-size: .78rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+      color: var(--set-text); background: var(--set-bg);
+      border: 1px solid var(--set-border); border-radius: 100px;
+      padding: 5px 12px; white-space: nowrap;
+    }
+
+    /* ─── Card ───────────────────────────────────────────────────────── */
+    .card {
+      background: white; border: 1px solid var(--border-soft);
+      border-radius: var(--radius-lg); overflow: hidden;
+      box-shadow: var(--shadow-sm);
+      transition: transform var(--transition), box-shadow var(--transition), opacity var(--transition);
+      position: relative; display: flex; flex-direction: column;
+      animation: card-in .3s cubic-bezier(.4,0,.2,1) both;
+    }
+    .card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+    .card.bought { opacity: .52; }
+    .card.bought .card-body { pointer-events: none; }
+    .card.bought .card-body [data-action] { pointer-events: auto; }
+    .card.event-card { border-color: var(--event-border); }
+    .card.event-card .card-image-placeholder { background: linear-gradient(135deg, var(--event-bg) 0%, #dbeafe 100%); }
+    .card.flagged { border-color: var(--red-border); }
+
+    /* star glow */
+    .card.starred { box-shadow: var(--shadow-sm), 0 0 0 2px var(--gold), 0 0 16px rgba(245,158,11,.18); }
+    .card.starred:hover { box-shadow: var(--shadow-md), 0 0 0 2px var(--gold), 0 0 20px rgba(245,158,11,.22); }
+
+    .card-ribbon {
+      position: absolute; top: 14px; right: 14px; z-index: 2;
+      background: var(--pink-500); color: white;
+      font-size: .72rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+      padding: 4px 10px; border-radius: 100px;
+      box-shadow: 0 2px 8px rgba(233,30,140,.35); display: none;
+    }
+    .card.bought .card-ribbon { display: block; }
+
+    .card-star-badge {
+      position: absolute; top: 14px; left: 14px; z-index: 2;
+      background: var(--gold-bg); border: 1.5px solid var(--gold-border);
+      color: var(--gold); font-size: .72rem; font-weight: 700;
+      padding: 3px 9px; border-radius: 100px;
+      display: none; align-items: center; gap: 4px;
+    }
+    .card.starred .card-star-badge { display: flex; }
+    .card.bought.starred .card-star-badge { top: 42px; }
+
+    .card-flag-badge {
+      position: absolute; bottom: 14px; right: 14px; z-index: 2;
+      background: var(--red-soft); border: 1px solid var(--red-border);
+      color: var(--red-text); font-size: .7rem; font-weight: 600;
+      padding: 3px 9px; border-radius: 100px;
+      display: none; align-items: center; gap: 4px;
+    }
+    .card.flagged .card-flag-badge { display: flex; }
+
+    .card-image-placeholder {
+      width: 100%; aspect-ratio: 4/3;
+      background: linear-gradient(135deg, var(--pink-50) 0%, var(--blush) 100%);
+      display: flex; align-items: center; justify-content: center; font-size: 3rem;
+      position: relative; overflow: hidden;
+    }
+    .card-og-img {
+      position: absolute; inset: 0; width: 100%; height: 100%;
+      object-fit: cover; display: block;
+      opacity: 0; transition: opacity .35s ease;
+    }
+    .card-og-img.loaded { opacity: 1; }
+    .card-og-emoji {
+      transition: opacity .35s ease;
+      position: relative; z-index: 1;
+    }
+    .card-og-img.loaded ~ .card-og-emoji { opacity: 0; }
+
+    /* ─── Custom image overlay (owner upload) ────────────────────────── */
+    .card-img-upload-btn {
+      position: absolute; bottom: 8px; left: 8px; z-index: 3;
+      display: none;
+      background: rgba(255,255,255,.88); color: var(--pink-600);
+      border: 1.5px solid var(--pink-200); border-radius: 100px;
+      font-size: .72rem; font-weight: 600; padding: 4px 10px; cursor: pointer;
+      transition: background var(--transition);
+    }
+    .card-img-upload-btn:hover { background: white; }
+    .card:hover .card-img-upload-btn { display: block; }
+    .card-img-upload-input { display: none; }
+    .card-img-remove-btn {
+      position: absolute; top: 8px; right: 8px; z-index: 3;
+      display: none;
+      background: rgba(255,255,255,.88); color: var(--red-text);
+      border: 1px solid var(--red-border); border-radius: 50%;
+      width: 24px; height: 24px; font-size: .75rem; font-weight: 700;
+      cursor: pointer; align-items: center; justify-content: center;
+      transition: background var(--transition);
+    }
+    .card:hover .card-img-remove-btn { display: flex; }
+
+    /* ─── Price collapse ─────────────────────────────────────────────── */
+    .card-price { cursor: pointer; user-select: none; }
+    .card-price.hidden-price::after { content: ' ···'; }
+    .card-price.hidden-price .price-value { display: none; }
+
+    .card-body { padding: 20px; flex: 1; display: flex; flex-direction: column; gap: 10px; }
+    .card-category { font-size: .72rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--pink-500); }
+    .card.event-card .card-category { color: var(--event-text); }
+    .card-name { font-family: 'Playfair Display', serif; font-size: 1.08rem; font-weight: 600; line-height: 1.35; color: var(--text-primary); }
+    .card-desc { font-size: .82rem; color: var(--text-secondary); line-height: 1.55; flex: 1; }
+    .card-set-tag {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: .72rem; font-weight: 600; color: var(--set-text);
+      background: var(--set-bg); border: 1px solid var(--set-border);
+      border-radius: 100px; padding: 3px 9px; width: fit-content;
+    }
+    .card-footer { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 4px; }
+    .card-price { font-size: 1.15rem; font-weight: 700; color: var(--pink-600); }
+    .card-price.free { color: #2e7d32; font-size: .9rem; }
+
+    .card-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+
+    /* ─── Buttons ────────────────────────────────────────────────────── */
+    .btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 8px 16px; border-radius: var(--radius-sm);
+      font-family: 'Inter', sans-serif; font-size: .82rem; font-weight: 600;
+      cursor: pointer; border: none; outline: none;
+      transition: all var(--transition); white-space: nowrap; text-decoration: none;
+    }
+    .btn-primary { background: var(--pink-500); color: white; }
+    .btn-primary:hover { background: var(--pink-600); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(233,30,140,.3); }
+    .btn-primary:active { transform: none; box-shadow: none; }
+    .btn-ghost { background: var(--pink-50); color: var(--pink-500); border: 1.5px solid var(--pink-200); }
+    .btn-ghost:hover { background: var(--pink-100); border-color: var(--pink-300); }
+    .btn-undo { background: #fff3e0; color: #e65100; border: 1.5px solid #ffcc80; font-size: .78rem; padding: 6px 12px; }
+    .btn-undo:hover { background: #ffe0b2; }
+    .btn-delete { background: var(--red-soft); color: var(--red-text); border: 1.5px solid var(--red-border); padding: 6px 10px; font-size: .78rem; }
+    .btn-delete:hover { background: #ffe4e1; }
+    .btn-edit { background: var(--pink-50); color: var(--text-secondary); border: 1.5px solid var(--border); padding: 6px 10px; font-size: .78rem; }
+    .btn-edit:hover { background: var(--pink-100); border-color: var(--pink-300); color: var(--pink-500); }
+    .btn-star {
+      background: var(--gold-bg); color: var(--gold); border: 1.5px solid var(--gold-border);
+      padding: 7px 10px; font-size: .85rem;
+    }
+    .btn-star:hover { background: #fef3c7; border-color: var(--gold); }
+    .btn-star.on { background: var(--gold); color: white; border-color: var(--gold); }
+    .btn-flag {
+      background: var(--red-soft); color: var(--red-text); border: 1.5px solid var(--red-border);
+      padding: 6px 10px; font-size: .78rem;
+    }
+    .btn-flag:hover { background: #ffe4e1; }
+    .btn-flag.on { background: var(--red-text); color: white; }
+    .btn-link {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: .78rem; color: var(--text-muted); font-weight: 500;
+      text-decoration: none; padding: 4px 0; transition: color var(--transition);
+    }
+    .btn-link:hover { color: var(--pink-500); }
+    .btn-link svg { width: 12px; height: 12px; }
+    .btn-sm { padding: 6px 12px; font-size: .78rem; }
+    .btn-outline-pink { background: transparent; color: var(--pink-500); border: 1.5px solid var(--pink-300); }
+    .btn-outline-pink:hover { background: var(--pink-50); }
+
+    /* ─── Empty state ────────────────────────────────────────────────── */
+    .empty { grid-column: 1/-1; text-align: center; padding: 80px 20px; }
+    .empty-icon { font-size: 3.5rem; margin-bottom: 16px; }
+    .empty h3 { font-family: 'Playfair Display', serif; font-size: 1.5rem; color: var(--text-primary); margin-bottom: 8px; }
+    .empty p { color: var(--text-secondary); font-size: .9rem; }
+
+    /* ─── Toast ──────────────────────────────────────────────────────── */
+    #toast-container { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; gap: 8px; align-items: center; z-index: 9999; pointer-events: none; }
+    .toast { background: var(--text-primary); color: white; padding: 12px 20px; border-radius: 100px; font-size: .85rem; font-weight: 500; box-shadow: var(--shadow-lg); display: flex; align-items: center; gap: 8px; pointer-events: auto; animation: toast-in .25s cubic-bezier(.4,0,.2,1) forwards; }
+    .toast.removing { animation: toast-out .2s cubic-bezier(.4,0,.2,1) forwards; }
+    @keyframes toast-in { from { opacity: 0; transform: translateY(12px) scale(.96); } to { opacity: 1; transform: none; } }
+    @keyframes toast-out { to { opacity: 0; transform: translateY(8px) scale(.95); } }
+
+    /* ─── Loading ────────────────────────────────────────────────────── */
+    .loading-overlay { display: flex; align-items: center; justify-content: center; gap: 12px; padding: 48px; grid-column: 1/-1; color: var(--text-muted); font-size: .9rem; }
+    .spinner { width: 22px; height: 22px; border: 2px solid var(--pink-200); border-top-color: var(--pink-400); border-radius: 50%; animation: spin .7s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ─── Modal backdrop ─────────────────────────────────────────────── */
+    .modal-backdrop {
+      display: none; position: fixed; inset: 0;
+      background: rgba(45,27,46,.45); backdrop-filter: blur(4px);
+      z-index: 1000; align-items: center; justify-content: center; padding: 20px;
+    }
+    .modal-backdrop.open { display: flex; }
+    .modal {
+      background: white; border-radius: var(--radius-xl);
+      width: 100%; max-width: 580px; max-height: 90vh; overflow-y: auto;
+      box-shadow: var(--shadow-lg); animation: modal-in .25s cubic-bezier(.4,0,.2,1);
+    }
+    @keyframes modal-in { from { opacity: 0; transform: scale(.96) translateY(12px); } to { opacity: 1; transform: none; } }
+    .modal-header {
+      padding: 28px 28px 0; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
+    }
+    .modal-title { font-family: 'Playfair Display', serif; font-size: 1.4rem; font-weight: 600; color: var(--text-primary); }
+    .modal-subtitle { font-size: .85rem; color: var(--text-secondary); margin-top: 4px; }
+    .modal-close {
+      background: var(--pink-50); border: none; border-radius: 50%;
+      width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+      cursor: pointer; color: var(--text-muted); flex-shrink: 0;
+      transition: background var(--transition), color var(--transition);
+    }
+    .modal-close:hover { background: var(--pink-100); color: var(--pink-500); }
+    .modal-body { padding: 24px 28px 28px; display: flex; flex-direction: column; gap: 20px; }
+
+    /* ─── Form elements ──────────────────────────────────────────────── */
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-label { font-size: .82rem; font-weight: 600; color: var(--text-secondary); }
+    .form-label span { font-weight: 400; color: var(--text-muted); margin-left: 4px; }
+    .form-input, .form-select, .form-textarea {
+      padding: 10px 14px; border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm); font-family: 'Inter', sans-serif;
+      font-size: .9rem; color: var(--text-primary); background: var(--pink-50);
+      outline: none; transition: border-color var(--transition), box-shadow var(--transition);
+      width: 100%;
+    }
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
+      border-color: var(--pink-400); box-shadow: 0 0 0 3px rgba(233,30,140,.10);
+    }
+    .form-textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .form-hint { font-size: .76rem; color: var(--text-muted); }
+
+    /* JSON import area */
+    .json-example {
+      background: #1e1e2e; color: #cdd6f4; font-family: 'Courier New', monospace;
+      font-size: .76rem; line-height: 1.6; padding: 14px 16px;
+      border-radius: var(--radius-sm); overflow-x: auto; position: relative;
+    }
+    .json-copy-btn {
+      position: absolute; top: 8px; right: 8px;
+      background: rgba(205,214,244,.12); color: #cdd6f4;
+      border: 1px solid rgba(205,214,244,.2); border-radius: 6px;
+      font-size: .72rem; font-family: 'Inter', sans-serif; font-weight: 500;
+      padding: 4px 10px; cursor: pointer; transition: background var(--transition);
+    }
+    .json-copy-btn:hover { background: rgba(205,214,244,.22); }
+    .json-copy-btn.copied { color: #a6e3a1; border-color: #a6e3a1; }
+
+    /* tabs */
+    .tab-row { display: flex; gap: 4px; background: var(--pink-50); border-radius: var(--radius-sm); padding: 4px; }
+    .tab-btn {
+      flex: 1; padding: 8px 12px; border-radius: 8px; border: none;
+      font-family: 'Inter', sans-serif; font-size: .82rem; font-weight: 500;
+      color: var(--text-muted); background: transparent; cursor: pointer;
+      transition: all var(--transition);
+    }
+    .tab-btn.active { background: white; color: var(--pink-500); box-shadow: var(--shadow-sm); }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: flex; flex-direction: column; gap: 16px; }
+
+    /* ─── Auth modal specific ────────────────────────────────────────── */
+    .auth-modal { max-width: 380px; }
+    .auth-modal .modal-body { align-items: center; text-align: center; }
+    .auth-icon { font-size: 2.5rem; margin-bottom: 4px; }
+
+    /* ─── Responsive ─────────────────────────────────────────────────── */
+    @media (max-width: 600px) {
+      .controls { flex-direction: column; align-items: stretch; }
+      .controls-right { margin-left: 0; }
+      header { padding: 36px 0 28px; }
+      .form-row { grid-template-columns: 1fr; }
+      .modal { border-radius: var(--radius-lg); }
+    }
+
+    @keyframes card-in { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+    .card:nth-child(1)  { animation-delay: .03s; }
+    .card:nth-child(2)  { animation-delay: .06s; }
+    .card:nth-child(3)  { animation-delay: .09s; }
+    .card:nth-child(4)  { animation-delay: .12s; }
+    .card:nth-child(5)  { animation-delay: .15s; }
+    .card:nth-child(6)  { animation-delay: .18s; }
+    .card:nth-child(7)  { animation-delay: .21s; }
+    .card:nth-child(8)  { animation-delay: .24s; }
+    .card:nth-child(9)  { animation-delay: .27s; }
+    .card:nth-child(10) { animation-delay: .30s; }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ── Header ─────────────────────────────────────────────────────── -->
+  <header>
+    <h1>Livi's <em>Wish</em> List</h1>
+    <p>See something you'd like to get me? Click "I'll get this!" to claim it so we don't get duplicates ✨</p>
+    <div class="header-stats">
+      <span class="stat"><strong id="stat-available">—</strong> available</span>
+      <span class="stat-divider"></span>
+      <span class="stat"><strong id="stat-bought">—</strong> claimed</span>
+      <span class="stat-divider"></span>
+      <span class="stat"><strong id="stat-total">—</strong> total</span>
+    </div>
+  </header>
+
+  <!-- ── Owner bar ───────────────────────────────────────────────────── -->
+  <div class="owner-bar" id="owner-bar">
+    <div class="owner-bar-left">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      Owner mode — you can add, star, and manage gifts
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-ghost btn-sm" id="add-gift-btn">＋ Add Gifts</button>
+      <button class="btn btn-sm btn-outline-pink" id="owner-logout-btn">Sign out</button>
+    </div>
+  </div>
+
+  <!-- ── Controls ───────────────────────────────────────────────────── -->
+  <div class="controls">
+    <div class="search-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input id="search" type="text" placeholder="Search gifts…" autocomplete="off" />
+    </div>
+    <select id="price-filter" class="filter-select" aria-label="Filter by price">
+      <option value="">Any price</option>
+      <option value="0-25">Under $25</option>
+      <option value="25-50">$25 – $50</option>
+      <option value="50-100">$50 – $100</option>
+      <option value="100-250">$100 – $250</option>
+      <option value="250+">$250+</option>
+    </select>
+    <div class="filter-pills" id="category-pills"></div>
+    <div class="controls-right">
+      <div class="toggle-wrap">
+        <span class="toggle-label">Show claimed</span>
+        <button class="toggle on" id="show-bought-toggle" role="switch" aria-checked="true" aria-label="Show claimed gifts"></button>
+      </div>
+      <button class="btn btn-ghost btn-sm" id="owner-login-btn" title="Owner login">🔑</button>
+    </div>
+  </div>
+
+  <!-- ── Gift Grid ───────────────────────────────────────────────────── -->
+  <div class="grid" id="grid">
+    <div class="loading-overlay"><div class="spinner"></div> Loading gifts…</div>
+  </div>
+
+</div><!-- /page -->
+
+<!-- ── Toast ──────────────────────────────────────────────────────────── -->
+<div id="toast-container" aria-live="polite"></div>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     MODAL — Owner auth
+════════════════════════════════════════════════════════════════════ -->
+<div class="modal-backdrop" id="auth-modal-backdrop">
+  <div class="modal auth-modal" role="dialog" aria-modal="true" aria-labelledby="auth-title">
+    <div class="modal-header" style="flex-direction:column;align-items:center;padding-bottom:0;">
+      <div class="auth-icon">🔑</div>
+      <div class="modal-title" id="auth-title">Owner access</div>
+      <div class="modal-subtitle">Enter your password to manage the list</div>
+    </div>
+    <div class="modal-body" style="gap:16px;">
+      <input type="password" id="auth-input" class="form-input" placeholder="Password" style="text-align:center;letter-spacing:.15em;" />
+      <button class="btn btn-primary" id="auth-submit-btn" style="width:100%;justify-content:center;">Unlock ✨</button>
+      <div id="auth-error" style="color:var(--red-text);font-size:.82rem;display:none;">Incorrect password, try again.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     MODAL — Add / bulk import gifts
+════════════════════════════════════════════════════════════════════ -->
+<div class="modal-backdrop" id="add-modal-backdrop">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="add-modal-title">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="add-modal-title">Add Gifts</div>
+        <div class="modal-subtitle" id="add-modal-subtitle">Add a single gift or import many at once</div>
+      </div>
+      <button class="modal-close" id="add-modal-close" aria-label="Close">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+
+      <!-- tabs -->
+      <div class="tab-row" id="add-modal-tabs">
+        <button class="tab-btn active" data-tab="single">Single gift</button>
+        <button class="tab-btn" data-tab="bulk">Bulk JSON</button>
+      </div>
+
+      <!-- single tab -->
+      <div class="tab-panel active" id="tab-single">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Name <span>*</span></label>
+            <input class="form-input" id="f-name" placeholder="e.g. Ren Faire Ticket" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Category <span>*</span></label>
+            <input class="form-input" id="f-category" placeholder="e.g. Experience" list="cat-datalist" />
+            <datalist id="cat-datalist"></datalist>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Price <span>(USD number, 0 = free)</span></label>
+            <input class="form-input" id="f-price" type="number" min="0" step="0.01" placeholder="29.99" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Emoji / icon</label>
+            <input class="form-input" id="f-emoji" placeholder="🎁" maxlength="4" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Link <span>(optional)</span></label>
+          <input class="form-input" id="f-link" type="url" placeholder="https://..." />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Description <span>(optional)</span></label>
+          <textarea class="form-textarea" id="f-desc" placeholder="Short description…"></textarea>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Gift Set <span>(optional group name)</span></label>
+            <input class="form-input" id="f-set" placeholder="e.g. Ren Faire Day" list="set-datalist" />
+            <datalist id="set-datalist"></datalist>
+          </div>
+          <div class="form-group">
+            <label class="form-label">⭐ Really want it?</label>
+            <select class="form-select" id="f-star">
+              <option value="false">No</option>
+              <option value="true">Yes — star it!</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn btn-primary" id="single-add-btn" style="justify-content:center;">Add gift ✨</button>
+        <input type="hidden" id="f-edit-id" value="" />
+      </div>
+
+      <!-- bulk tab -->
+      <div class="tab-panel" id="tab-bulk">
+        <div class="form-group">
+          <label class="form-label">Paste JSON array of gifts</label>
+          <p class="form-hint">Each object follows this shape — copy the example below as a starting point.</p>
+        </div>
+
+        <div class="json-example" id="json-example-block">
+          <button class="json-copy-btn" id="json-copy-btn">Copy</button>
+<pre id="json-example-text">[
+  {
+    "id": "ren-faire-ticket",
+    "name": "Ren Faire Ticket",
+    "category": "Experience",
+    "price": 35,
+    "desc": "A day at the Renaissance Faire!",
+    "link": "https://example.com",
+    "emoji": "🎪",
+    "set": "Ren Faire Day",
+    "starred": true
+  },
+  {
+    "id": "ren-faire-dress",
+    "name": "Faire Dress",
+    "category": "Clothing",
+    "price": 89,
+    "desc": "A beautiful medieval-style dress to wear.",
+    "link": "https://example.com",
+    "emoji": "👗",
+    "set": "Ren Faire Day",
+    "starred": false
+  }
+]</pre>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Your JSON</label>
+          <textarea class="form-textarea" id="bulk-json-input" style="min-height:160px;font-family:'Courier New',monospace;font-size:.8rem;" placeholder="Paste your JSON array here…"></textarea>
+        </div>
+        <div id="bulk-error" style="color:var(--red-text);font-size:.82rem;display:none;"></div>
+        <button class="btn btn-primary" id="bulk-add-btn" style="justify-content:center;">Import gifts ✨</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     MODAL — Report flag
+════════════════════════════════════════════════════════════════════ -->
+<div class="modal-backdrop" id="flag-modal-backdrop">
+  <div class="modal auth-modal" role="dialog" aria-modal="true" aria-labelledby="flag-title">
+    <div class="modal-header" style="flex-direction:column;align-items:center;padding-bottom:0;">
+      <div class="auth-icon">🚩</div>
+      <div class="modal-title" id="flag-title">Report this gift</div>
+      <div class="modal-subtitle" id="flag-subtitle">Let Livi know something's off</div>
+    </div>
+    <div class="modal-body" style="gap:12px;">
+      <select class="form-select" id="flag-reason">
+        <option value="out-of-stock">Out of stock</option>
+        <option value="dead-link">Dead / broken link</option>
+        <option value="wrong-price">Price has changed</option>
+        <option value="other">Other</option>
+      </select>
+      <button class="btn btn-primary" id="flag-submit-btn" style="width:100%;justify-content:center;background:#e53e3e;">Submit report 🚩</button>
+      <button class="btn btn-ghost btn-sm" id="flag-cancel-btn" style="width:100%;justify-content:center;">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ================================================================
+   CONFIG
+   ================================================================ */
+const WORKER_URL   = 'https://gist-proxy.vlad-stol223.workers.dev/progress';
+const OWNER_PASS   = 'livilove'; // change this to whatever you want
+
+/* ================================================================
+   GIFT DATA  — the source of truth for card content.
+   State (bought / starred / flagged) lives in the Gist.
+   ================================================================ */
+let GIFTS = [];
+
+/* ================================================================
+   REMOTE STATE  (bought / starred / flagged / gifts-override)
+   Schema: { bought:{}, starred:{}, flagged:{}, gifts:[] }
+   ================================================================ */
+let remoteState = { bought: {}, starred: {}, flagged: {}, gifts: [] };
+
+const USE_LOCAL = (WORKER_URL === 'YOUR_WORKER_URL_HERE/progress');
+
+async function loadState() {
+  if (USE_LOCAL) {
+    try { remoteState = JSON.parse(localStorage.getItem('giftlist-state') || '{}'); } catch {}
+  } else {
+    try {
+      const r = await fetch(WORKER_URL, { cache: 'no-cache' });
+      if (r.ok) remoteState = await r.json();
+    } catch (e) { console.warn('Could not load state:', e); }
+  }
+  remoteState.bought  = remoteState.bought  || {};
+  remoteState.starred = remoteState.starred || {};
+  remoteState.flagged = remoteState.flagged || {};
+  remoteState.gifts   = remoteState.gifts   || [];
+  remoteState.images  = remoteState.images  || {};
+  // merge remote gift additions
+  if (remoteState.gifts.length) {
+    const existingIds = new Set(GIFTS.map(g => g.id));
+    remoteState.gifts.forEach(g => { if (!existingIds.has(g.id)) GIFTS.push(g); });
+  }
+  // sort by price ascending
+  GIFTS.sort((a, b) => (a.price || 0) - (b.price || 0));
+}
+
+async function saveState() {
+  // keep remote gifts list in sync
+  remoteState.gifts = GIFTS.filter(g => g._remote);
+  if (USE_LOCAL) {
+    localStorage.setItem('giftlist-state', JSON.stringify(remoteState));
+    return;
+  }
+  try {
+    await fetch(WORKER_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(remoteState),
+    });
+  } catch (e) { console.warn('Could not save state:', e); }
+}
+
+/* ================================================================
+   UI STATE
+   ================================================================ */
+let filterCat    = 'All';
+let filterPrice  = '';
+let filterSearch = '';
+let showBought   = true;
+let isOwner      = sessionStorage.getItem('giftlist-owner') === '1';
+let flagTargetId = null;
+
+/* ================================================================
+   HELPERS
+   ================================================================ */
+function categories() {
+  const s = new Set(GIFTS.map(g => g.category));
+  return ['All', ...s];
+}
+function sets() {
+  const s = new Set(GIFTS.map(g => g.set).filter(Boolean));
+  return [...s];
+}
+function priceInRange(price, range) {
+  if (!range) return true;
+  if (range === '250+') return price >= 250;
+  const [lo, hi] = range.split('-').map(Number);
+  return price >= lo && price < hi;
+}
+let pricesHidden = false;
+
+function visibleGifts() {
+  return GIFTS.filter(g => {
+    if (!showBought && remoteState.bought[g.id]) return false;
+    if (filterCat !== 'All' && g.category !== filterCat) return false;
+    if (!priceInRange(g.price, filterPrice)) return false;
+    if (filterSearch) {
+      const q = filterSearch.toLowerCase();
+      if (!g.name.toLowerCase().includes(q) && !(g.desc||'').toLowerCase().includes(q)) return false;
+    }
+    return true;
+  });
+}
+function formatPrice(p) {
+  const cls = 'card-price' + (pricesHidden ? ' hidden-price' : '');
+  if (!p || p === 0) return `<span class="${cls} free">Experience / Gift</span>`;
+  return `<span class="${cls}" data-action="toggle-price"><span class="price-value">$${Number(p).toFixed(2)}</span></span>`;
+}
+function uid() {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+}
+
+/* ================================================================
+   RENDER
+   ================================================================ */
+function renderCategoryPills() {
+  const container = document.getElementById('category-pills');
+  container.innerHTML = categories().map(c => `
+    <button class="pill ${c === filterCat ? 'active' : ''}" data-cat="${c}" aria-pressed="${c === filterCat}">
+      ${c !== 'All' ? '<span class="pill-dot"></span>' : '✨'} ${c}
+    </button>
+  `).join('');
+  container.querySelectorAll('.pill').forEach(btn => {
+    btn.addEventListener('click', () => { filterCat = btn.dataset.cat; renderAll(); });
+  });
+}
+
+function renderCards() {
+  const grid    = document.getElementById('grid');
+  const visible = visibleGifts();
+  updateStats();
+
+  if (!visible.length) {
+    grid.innerHTML = `<div class="empty"><div class="empty-icon">🌸</div><h3>Nothing here yet</h3><p>Try adjusting your filters or search term.</p></div>`;
+    return;
+  }
+
+  // group by set, ungrouped items first
+  const ungrouped = visible.filter(g => !g.set);
+  const grouped   = {};
+  visible.filter(g => g.set).forEach(g => {
+    (grouped[g.set] = grouped[g.set] || []).push(g);
+  });
+
+  let html = '';
+  ungrouped.forEach(g => { html += cardHTML(g); });
+  Object.entries(grouped).forEach(([setName, items]) => {
+    html += `
+      <div class="set-header">
+        <div class="set-header-line"></div>
+        <div class="set-header-label">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+          Gift Set — ${setName}
+        </div>
+        <div class="set-header-line"></div>
+      </div>`;
+    items.forEach(g => { html += cardHTML(g); });
+  });
+
+  grid.innerHTML = html;
+  attachCardListeners();
+}
+
+function cardHTML(g) {
+  const isBought  = !!remoteState.bought[g.id];
+  const isStarred = !!(g.starred || remoteState.starred[g.id]);
+  const isFlagged = !!remoteState.flagged[g.id];
+  const isEvent   = ['experience','event','experiences','events'].includes((g.category||'').toLowerCase());
+
+  return `
+  <article class="card ${isBought ? 'bought' : ''} ${isStarred ? 'starred' : ''} ${isFlagged ? 'flagged' : ''} ${isEvent ? 'event-card' : ''}" data-id="${g.id}">
+    <span class="card-ribbon">Claimed ✓</span>
+    <div class="card-star-badge">⭐ Really wants this!</div>
+    <div class="card-flag-badge">🚩 Reported</div>
+    <div class="card-image-placeholder" aria-hidden="true">
+      ${remoteState.images[g.id]
+        ? `<img class="card-og-img loaded" src="${remoteState.images[g.id]}" alt="" />`
+        : g.link ? `<img class="card-og-img" data-og-src="${WORKER_URL.replace('/progress','/og')}?url=${encodeURIComponent(g.link)}" alt="" loading="lazy" />` : ''}
+      <span class="card-og-emoji">${g.emoji || '🎁'}</span>
+      ${isOwner ? `<label class="card-img-upload-btn" title="Upload image">📷 ${remoteState.images[g.id] ? 'Change' : 'Upload'} image<input class="card-img-upload-input" type="file" accept="image/*" data-action="upload-img" data-id="${g.id}" /></label>` : ''}
+      ${isOwner && remoteState.images[g.id] ? `<button class="card-img-remove-btn" data-action="remove-img" data-id="${g.id}" title="Remove custom image">✕</button>` : ''}
+    </div>
+    <div class="card-body">
+      <span class="card-category">${g.category}</span>
+      <h2 class="card-name">${g.name}</h2>
+      ${g.set ? `<span class="card-set-tag"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>${g.set}</span>` : ''}
+      ${g.desc ? `<p class="card-desc">${g.desc}</p>` : ''}
+      <div class="card-footer">
+        ${formatPrice(g.price)}
+        <div class="card-actions">
+          ${g.link ? `<a href="${g.link}" target="_blank" rel="noopener" class="btn btn-ghost btn-link" aria-label="View ${g.name}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            View
+          </a>` : ''}
+          ${isOwner
+            ? `<button class="btn btn-edit" data-action="edit" data-id="${g.id}" title="Edit gift">✏️</button>
+               <button class="btn btn-star ${isStarred ? 'on' : ''}" data-action="star" data-id="${g.id}" title="${isStarred ? 'Unstar' : 'Star — I really want this!'}">⭐</button>`
+            : ''}
+          ${isBought
+            ? `<button class="btn btn-undo" data-action="undo" data-id="${g.id}">↩ Undo</button>`
+            : `<button class="btn btn-primary" data-action="buy" data-id="${g.id}">🎀 I'll get this!</button>`}
+          <button class="btn btn-flag ${isFlagged ? 'on' : ''}" data-action="flag" data-id="${g.id}" title="Report issue">🚩</button>
+          ${isOwner ? `<button class="btn btn-delete" data-action="delete" data-id="${g.id}" title="Delete gift">🗑</button>` : ''}
+        </div>
+      </div>
+    </div>
+  </article>`;
+}
+
+function attachCardListeners() {
+  // image upload (file inputs use 'change', not 'click')
+  document.querySelectorAll('[data-action="upload-img"]').forEach(input => {
+    input.addEventListener('change', async e => {
+      const id   = input.dataset.id;
+      const file = input.files[0];
+      if (!file || !id) return;
+      const reader = new FileReader();
+      reader.onload = async ev => {
+        remoteState.images[id] = ev.target.result;
+        await saveState();
+        renderAll();
+        showToast('🖼️ Image saved!');
+      };
+      reader.readAsDataURL(file);
+    });
+  });
+
+  document.querySelectorAll('[data-action]').forEach(btn => {
+    if (btn.tagName === 'INPUT') return; // skip file inputs handled above
+    btn.addEventListener('click', async e => {
+      e.stopPropagation();
+      const id     = btn.dataset.id;
+      const action = btn.dataset.action;
+
+      if (action === 'toggle-price') {
+        pricesHidden = !pricesHidden;
+        renderCards();
+        loadOgImages();
+        return;
+      }
+
+      const gift = GIFTS.find(g => g.id === id);
+      if (!gift) return;
+
+      if (action === 'buy') {
+        remoteState.bought[id] = true;
+        showToast(`🎀 Claimed — ${gift.name}!`);
+        await saveState(); renderAll();
+      } else if (action === 'undo') {
+        delete remoteState.bought[id];
+        showToast(`↩ Unclaimed — ${gift.name}`);
+        await saveState(); renderAll();
+      } else if (action === 'star') {
+        if (remoteState.starred[id]) {
+          delete remoteState.starred[id];
+          gift.starred = false;
+          showToast(`💛 Unstarred — ${gift.name}`);
+        } else {
+          remoteState.starred[id] = true;
+          gift.starred = true;
+          showToast(`⭐ Starred — ${gift.name}!`);
+        }
+        await saveState(); renderAll();
+      } else if (action === 'edit') {
+        openEditModal(gift);
+      } else if (action === 'flag') {
+        openFlagModal(id, gift.name);
+      } else if (action === 'delete') {
+        if (!confirm(`Delete "${gift.name}"? This cannot be undone.`)) return;
+        GIFTS = GIFTS.filter(g => g.id !== id);
+        delete remoteState.bought[id];
+        delete remoteState.starred[id];
+        delete remoteState.flagged[id];
+        delete remoteState.images[id];
+        showToast(`🗑 Deleted — ${gift.name}`);
+        await saveState(); renderAll();
+      } else if (action === 'remove-img') {
+        delete remoteState.images[id];
+        await saveState(); renderAll();
+        showToast('🖼️ Custom image removed');
+      }
+    });
+  });
+}
+
+function loadOgImages() {
+  document.querySelectorAll('.card-og-img[data-og-src]').forEach(img => {
+    if (img.dataset.loaded) return;
+    img.dataset.loaded = '1';
+    const src = img.dataset.ogSrc;
+    fetch(src)
+      .then(r => r.status === 204 ? null : r.json())
+      .then(data => {
+        if (!data || !data.image) return;
+        img.src = data.image;
+        img.onload  = () => img.classList.add('loaded');
+        img.onerror = () => {};
+      })
+      .catch(() => {});
+  });
+}
+
+function updateStats() {
+  const total     = GIFTS.length;
+  const boughtN   = Object.keys(remoteState.bought).filter(id => GIFTS.find(g => g.id === id)).length;
+  document.getElementById('stat-total').textContent     = total;
+  document.getElementById('stat-bought').textContent    = boughtN;
+  document.getElementById('stat-available').textContent = total - boughtN;
+}
+
+function renderAll() {
+  renderCategoryPills();
+  renderCards();
+  updateOwnerUI();
+  populateDataLists();
+  loadOgImages();
+}
+
+/* ================================================================
+   OWNER
+   ================================================================ */
+function updateOwnerUI() {
+  document.getElementById('owner-bar').classList.toggle('visible', isOwner);
+  document.getElementById('owner-login-btn').style.display = isOwner ? 'none' : '';
+}
+
+document.getElementById('owner-login-btn').addEventListener('click', () => {
+  document.getElementById('auth-modal-backdrop').classList.add('open');
+  document.getElementById('auth-input').value = '';
+  document.getElementById('auth-error').style.display = 'none';
+  setTimeout(() => document.getElementById('auth-input').focus(), 50);
+});
+document.getElementById('owner-logout-btn').addEventListener('click', () => {
+  isOwner = false;
+  sessionStorage.removeItem('giftlist-owner');
+  renderAll();
+  showToast('Signed out of owner mode');
+});
+document.getElementById('auth-submit-btn').addEventListener('click', checkAuth);
+document.getElementById('auth-input').addEventListener('keydown', e => { if (e.key === 'Enter') checkAuth(); });
+document.getElementById('auth-modal-backdrop').addEventListener('click', e => {
+  if (e.target === document.getElementById('auth-modal-backdrop')) closeAuthModal();
+});
+function checkAuth() {
+  if (document.getElementById('auth-input').value === OWNER_PASS) {
+    isOwner = true;
+    sessionStorage.setItem('giftlist-owner', '1');
+    closeAuthModal();
+    renderAll();
+    showToast('✨ Owner mode unlocked!');
+  } else {
+    document.getElementById('auth-error').style.display = 'block';
+    document.getElementById('auth-input').select();
+  }
+}
+function closeAuthModal() {
+  document.getElementById('auth-modal-backdrop').classList.remove('open');
+}
+
+/* ================================================================
+   ADD GIFTS MODAL
+   ================================================================ */
+document.getElementById('add-gift-btn').addEventListener('click', () => {
+  document.getElementById('add-modal-backdrop').classList.add('open');
+  clearSingleForm();          // always "Add" mode when opened from owner bar
+  setAddModalMode('add');
+});
+document.getElementById('add-modal-close').addEventListener('click', () => {
+  document.getElementById('add-modal-backdrop').classList.remove('open');
+  setAddModalMode('add'); clearSingleForm();
+});
+document.getElementById('add-modal-backdrop').addEventListener('click', e => {
+  if (e.target === document.getElementById('add-modal-backdrop')) {
+    document.getElementById('add-modal-backdrop').classList.remove('open');
+    setAddModalMode('add'); clearSingleForm();
+  }
+});
+
+// tabs
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const tab = btn.dataset.tab;
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === 'tab-' + tab));
+  });
+});
+
+function populateDataLists() {
+  const cats = categories().filter(c => c !== 'All');
+  document.getElementById('cat-datalist').innerHTML = cats.map(c => `<option value="${c}">`).join('');
+  document.getElementById('set-datalist').innerHTML = sets().map(s => `<option value="${s}">`).join('');
+}
+
+function clearSingleForm() {
+  ['f-name','f-category','f-price','f-emoji','f-link','f-desc','f-set'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('f-star').value = 'false';
+  document.getElementById('f-edit-id').value = '';
+}
+
+// switch modal between "add" and "edit" mode
+function setAddModalMode(mode, gift) {
+  const isEdit = mode === 'edit';
+  document.getElementById('add-modal-title').textContent    = isEdit ? 'Edit Gift'  : 'Add Gifts';
+  document.getElementById('add-modal-subtitle').textContent = isEdit ? `Editing — ${gift ? gift.name : ''}` : 'Add a single gift or import many at once';
+  document.getElementById('single-add-btn').textContent     = isEdit ? 'Save changes ✨' : 'Add gift ✨';
+  // hide bulk tab in edit mode
+  document.getElementById('add-modal-tabs').style.display   = isEdit ? 'none' : '';
+  document.getElementById('tab-bulk').classList.toggle('active', false);
+  document.getElementById('tab-single').classList.add('active');
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === 'single'));
+}
+
+function openEditModal(gift) {
+  clearSingleForm();
+  setAddModalMode('edit', gift);
+  // pre-fill
+  document.getElementById('f-name').value     = gift.name     || '';
+  document.getElementById('f-category').value = gift.category || '';
+  document.getElementById('f-price').value    = gift.price    != null ? gift.price : '';
+  document.getElementById('f-emoji').value    = gift.emoji    || '';
+  document.getElementById('f-link').value     = gift.link     || '';
+  document.getElementById('f-desc').value     = gift.desc     || '';
+  document.getElementById('f-set').value      = gift.set      || '';
+  document.getElementById('f-star').value     = (gift.starred || !!remoteState.starred[gift.id]) ? 'true' : 'false';
+  document.getElementById('f-edit-id').value  = gift.id;
+  document.getElementById('add-modal-backdrop').classList.add('open');
+  setTimeout(() => document.getElementById('f-name').focus(), 50);
+}
+
+document.getElementById('single-add-btn').addEventListener('click', async () => {
+  const name    = document.getElementById('f-name').value.trim();
+  const cat     = document.getElementById('f-category').value.trim();
+  const editId  = document.getElementById('f-edit-id').value;
+  if (!name || !cat) { showToast('⚠️ Name and category are required'); return; }
+
+  const fields = {
+    name,
+    category: cat,
+    price:   parseFloat(document.getElementById('f-price').value) || 0,
+    emoji:   document.getElementById('f-emoji').value.trim() || '🎁',
+    link:    document.getElementById('f-link').value.trim(),
+    desc:    document.getElementById('f-desc').value.trim(),
+    set:     document.getElementById('f-set').value.trim(),
+    starred: document.getElementById('f-star').value === 'true',
+  };
+
+  if (editId) {
+    // ── Edit existing gift ──
+    const idx = GIFTS.findIndex(g => g.id === editId);
+    if (idx === -1) return;
+    Object.assign(GIFTS[idx], fields);
+    // sync star state
+    if (fields.starred) remoteState.starred[editId] = true;
+    else delete remoteState.starred[editId];
+    GIFTS.sort((a, b) => (a.price || 0) - (b.price || 0));
+    await saveState();
+    document.getElementById('add-modal-backdrop').classList.remove('open');
+    setAddModalMode('add');
+    clearSingleForm();
+    renderAll();
+    showToast(`✨ Saved — ${fields.name}!`);
+  } else {
+    // ── Add new gift ──
+    const gift = { id: uid(), ...fields, _remote: true };
+    GIFTS.push(gift);
+    if (gift.starred) remoteState.starred[gift.id] = true;
+    GIFTS.sort((a, b) => (a.price || 0) - (b.price || 0));
+    await saveState();
+    document.getElementById('add-modal-backdrop').classList.remove('open');
+    setAddModalMode('add');
+    clearSingleForm();
+    renderAll();
+    showToast(`✨ Added — ${gift.name}!`);
+  }
+});
+
+// bulk import
+document.getElementById('json-copy-btn').addEventListener('click', () => {
+  const text = document.getElementById('json-example-text').textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById('json-copy-btn');
+    btn.textContent = 'Copied!'; btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+  });
+});
+
+document.getElementById('bulk-add-btn').addEventListener('click', async () => {
+  const errEl = document.getElementById('bulk-error');
+  errEl.style.display = 'none';
+  let parsed;
+  try {
+    parsed = JSON.parse(document.getElementById('bulk-json-input').value);
+  } catch {
+    errEl.textContent = '❌ Invalid JSON — check for missing commas or quotes.';
+    errEl.style.display = 'block'; return;
+  }
+  if (!Array.isArray(parsed)) {
+    errEl.textContent = '❌ Must be a JSON array [ ... ]';
+    errEl.style.display = 'block'; return;
+  }
+  const existingIds = new Set(GIFTS.map(g => g.id));
+  let added = 0;
+  parsed.forEach(raw => {
+    const id = raw.id || uid();
+    if (existingIds.has(id)) return;
+    const gift = {
+      id,
+      name:     raw.name     || 'Unnamed gift',
+      category: raw.category || 'General',
+      price:    parseFloat(raw.price) || 0,
+      emoji:    raw.emoji    || '🎁',
+      link:     raw.link     || '',
+      desc:     raw.desc     || '',
+      set:      raw.set      || '',
+      starred:  !!raw.starred,
+      _remote:  true,
+    };
+    GIFTS.push(gift);
+    if (gift.starred) remoteState.starred[gift.id] = true;
+    added++;
+  });
+  if (!added) { errEl.textContent = '⚠️ No new gifts found (IDs may already exist).'; errEl.style.display = 'block'; return; }
+  GIFTS.sort((a, b) => (a.price || 0) - (b.price || 0));
+  await saveState();
+  document.getElementById('add-modal-backdrop').classList.remove('open');
+  document.getElementById('bulk-json-input').value = '';
+  renderAll();
+  showToast(`✨ Imported ${added} gift${added !== 1 ? 's' : ''}!`);
+});
+
+/* ================================================================
+   FLAG MODAL
+   ================================================================ */
+function openFlagModal(id, name) {
+  flagTargetId = id;
+  document.getElementById('flag-subtitle').textContent = `"${name}"`;
+  document.getElementById('flag-modal-backdrop').classList.add('open');
+}
+document.getElementById('flag-cancel-btn').addEventListener('click', () => {
+  document.getElementById('flag-modal-backdrop').classList.remove('open');
+});
+document.getElementById('flag-modal-backdrop').addEventListener('click', e => {
+  if (e.target === document.getElementById('flag-modal-backdrop'))
+    document.getElementById('flag-modal-backdrop').classList.remove('open');
+});
+document.getElementById('flag-submit-btn').addEventListener('click', async () => {
+  if (!flagTargetId) return;
+  const reason = document.getElementById('flag-reason').value;
+  remoteState.flagged[flagTargetId] = reason;
+  document.getElementById('flag-modal-backdrop').classList.remove('open');
+  await saveState();
+  renderAll();
+  showToast('🚩 Thanks for the report!');
+  flagTargetId = null;
+});
+
+/* ================================================================
+   TOAST
+   ================================================================ */
+function showToast(msg, duration = 3200) {
+  const tc = document.getElementById('toast-container');
+  const el = document.createElement('div');
+  el.className = 'toast'; el.textContent = msg;
+  tc.appendChild(el);
+  setTimeout(() => {
+    el.classList.add('removing');
+    el.addEventListener('animationend', () => el.remove());
+  }, duration);
+}
+
+/* ================================================================
+   CONTROLS WIRING
+   ================================================================ */
+document.getElementById('search').addEventListener('input', e => {
+  filterSearch = e.target.value.trim(); renderAll();
+});
+document.getElementById('price-filter').addEventListener('change', e => {
+  filterPrice = e.target.value; renderAll();
+});
+const toggleBtn = document.getElementById('show-bought-toggle');
+toggleBtn.addEventListener('click', () => {
+  showBought = !showBought;
+  toggleBtn.classList.toggle('on', showBought);
+  toggleBtn.setAttribute('aria-checked', showBought);
+  renderAll();
+});
+
+/* ================================================================
+   INIT
+   ================================================================ */
+(async () => {
+  await loadState();
+  renderAll();
+})();
+</script>
+</body>
+</html>
