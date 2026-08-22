@@ -672,6 +672,7 @@
    CONFIG
    ================================================================ */
 const WORKER_URL   = 'https://gist-proxy.vlad-stol223.workers.dev/progress';
+const IMAGE_URL    = 'https://gist-proxy.vlad-stol223.workers.dev/image';
 const OWNER_PASS   = 'livilove'; // change this to whatever you want
 
 /* ================================================================
@@ -905,8 +906,15 @@ function attachCardListeners() {
       showToast('⏳ Compressing image…');
       const dataUrl = await compressImage(file);
       if (!dataUrl) { showToast('❌ Could not read image'); return; }
-      remoteState.images[id] = dataUrl;
-      await saveState();
+      try {
+        const r = await fetch(IMAGE_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id, dataUrl }),
+        });
+        if (!r.ok) throw new Error(await r.text());
+      } catch (e) { showToast('❌ Failed to save image'); console.warn(e); return; }
+      remoteState.images[id] = dataUrl; // update local cache so card re-renders immediately
       renderAll();
       showToast('🖼️ Image saved!');
     });
@@ -963,7 +971,10 @@ function attachCardListeners() {
         await saveState(); renderAll();
       } else if (action === 'remove-img') {
         delete remoteState.images[id];
-        await saveState(); renderAll();
+        renderAll();
+        try {
+          await fetch(IMAGE_URL + '?id=' + encodeURIComponent(id), { method: 'DELETE' });
+        } catch (e) { console.warn('remove-img failed:', e); }
         showToast('🖼️ Custom image removed');
       }
     });
