@@ -270,14 +270,75 @@
     }
     .card:hover .card-img-remove-btn { display: flex; }
 
-    /* ─── Price collapse ─────────────────────────────────────────────── */
-    .card-price { cursor: pointer; user-select: none; }
-    .card-price.hidden-price::after { content: ' ···'; }
-    .card-price.hidden-price .price-value { display: none; }
+    /* ─── Price band sections ────────────────────────────────────────── */
+    .price-band {
+      grid-column: 1 / -1;
+    }
+    .price-band-header {
+      display: flex; align-items: center; gap: 10px;
+      cursor: pointer; user-select: none;
+      padding: 10px 0 6px; margin-bottom: 4px;
+    }
+    .price-band-header:hover .price-band-label { color: var(--pink-500); }
+    .price-band-label {
+      font-size: .78rem; font-weight: 700; letter-spacing: .09em; text-transform: uppercase;
+      color: var(--text-muted); transition: color var(--transition);
+    }
+    .price-band-line { flex: 1; height: 1px; background: var(--border-soft); }
+    .price-band-chevron {
+      width: 16px; height: 16px; color: var(--text-muted); flex-shrink: 0;
+      transition: transform var(--transition);
+    }
+    .price-band.collapsed .price-band-chevron { transform: rotate(-90deg); }
+    .price-band-cards {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 20px;
+      overflow: hidden;
+      transition: grid-template-rows var(--transition);
+      grid-template-rows: 1fr;
+    }
+    .price-band.collapsed .price-band-cards {
+      grid-template-rows: 0fr;
+      pointer-events: none;
+    }
+    .price-band-cards-inner { min-height: 0; display: contents; }
+    /* smooth collapse via max-height wrapper */
+    .price-band-cards-wrap {
+      overflow: hidden;
+      max-height: 9999px;
+      transition: max-height .35s cubic-bezier(.4,0,.2,1), opacity .25s ease;
+      opacity: 1;
+    }
+    .price-band.collapsed .price-band-cards-wrap {
+      max-height: 0;
+      opacity: 0;
+    }
+    .price-band-cards-wrap .price-band-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 20px;
+      padding-bottom: 12px;
+    }
+    @media (max-width: 1200px) { .price-band-cards-wrap .price-band-grid { grid-template-columns: repeat(4, 1fr); } }
+    @media (max-width: 900px)  { .price-band-cards-wrap .price-band-grid { grid-template-columns: repeat(3, 1fr); } }
+    @media (max-width: 600px)  { .price-band-cards-wrap .price-band-grid { grid-template-columns: 1fr; } }
 
     .card-body { padding: 20px; flex: 1; display: flex; flex-direction: column; gap: 10px; }
+    .card-category-row { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
     .card-category { font-size: .72rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--pink-500); }
     .card.event-card .card-category { color: var(--event-text); }
+    /* flag button in category row — hidden until hover */
+    .card-flag-inline {
+      opacity: 0; pointer-events: none;
+      background: none; border: none; cursor: pointer;
+      font-size: .78rem; padding: 2px 4px; border-radius: 6px;
+      color: var(--text-muted); transition: opacity var(--transition), color var(--transition);
+      flex-shrink: 0; margin-left: auto;
+    }
+    .card:hover .card-flag-inline { opacity: 1; pointer-events: auto; }
+    .card-flag-inline:hover { color: var(--red-text); }
+    .card-flag-inline.on { opacity: 1; pointer-events: auto; color: var(--red-text); }
     .card-name { font-family: 'Playfair Display', serif; font-size: 1.08rem; font-weight: 600; line-height: 1.35; color: var(--text-primary); }
     .card-desc { font-size: .82rem; color: var(--text-secondary); line-height: 1.55; flex: 1; }
     .card-set-tag {
@@ -290,7 +351,24 @@
     .card-price { font-size: 1.15rem; font-weight: 700; color: var(--pink-600); }
     .card-price.free { color: #2e7d32; font-size: .9rem; }
 
-    .card-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+    .card-actions { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+
+    /* ─── View link button — pretty pill ─────────────────────────────── */
+    .btn-view {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 6px 13px; border-radius: 100px;
+      font-family: 'Inter', sans-serif; font-size: .78rem; font-weight: 600;
+      background: var(--pink-50); color: var(--pink-500);
+      border: 1.5px solid var(--pink-200);
+      cursor: pointer; text-decoration: none;
+      transition: background var(--transition), border-color var(--transition), transform var(--transition), box-shadow var(--transition);
+    }
+    .btn-view:hover {
+      background: var(--pink-100); border-color: var(--pink-400);
+      transform: translateY(-1px);
+      box-shadow: 0 3px 10px rgba(233,30,140,.18);
+    }
+    .btn-view svg { width: 11px; height: 11px; flex-shrink: 0; }
 
     /* ─── Buttons ────────────────────────────────────────────────────── */
     .btn {
@@ -498,7 +576,7 @@
     <div class="controls-right">
       <div class="toggle-wrap">
         <span class="toggle-label">Show claimed</span>
-        <button class="toggle on" id="show-bought-toggle" role="switch" aria-checked="true" aria-label="Show claimed gifts"></button>
+        <button class="toggle" id="show-bought-toggle" role="switch" aria-checked="false" aria-label="Show claimed gifts"></button>
       </div>
       <button class="btn btn-ghost btn-sm" id="owner-login-btn" title="Owner login">🔑</button>
     </div>
@@ -761,7 +839,7 @@ async function saveState() {
 let filterCat    = 'All';
 let filterPrice  = '';
 let filterSearch = '';
-let showBought   = true;
+let showBought   = false;
 let isOwner      = sessionStorage.getItem('giftlist-owner') === '1';
 let flagTargetId = null;
 
@@ -782,8 +860,6 @@ function priceInRange(price, range) {
   const [lo, hi] = range.split('-').map(Number);
   return price >= lo && price < hi;
 }
-let pricesHidden = false;
-
 function visibleGifts() {
   return GIFTS.filter(g => {
     if (!showBought && remoteState.bought[g.id]) return false;
@@ -797,9 +873,8 @@ function visibleGifts() {
   });
 }
 function formatPrice(p) {
-  const cls = 'card-price' + (pricesHidden ? ' hidden-price' : '');
-  if (!p || p === 0) return `<span class="${cls} free">Experience / Gift</span>`;
-  return `<span class="${cls}" data-action="toggle-price"><span class="price-value">$${Number(p).toFixed(2)}</span></span>`;
+  if (!p || p === 0) return `<span class="card-price free">Experience / Gift</span>`;
+  return `<span class="card-price">$${Number(p).toFixed(2)}</span>`;
 }
 function uid() {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -820,6 +895,17 @@ function renderCategoryPills() {
   });
 }
 
+const PRICE_BANDS = [
+  { key: 'under25',   label: 'Under $25',    test: p => p < 25 },
+  { key: '25to50',    label: '$25 – $50',     test: p => p >= 25 && p < 50 },
+  { key: '50to100',   label: '$50 – $100',    test: p => p >= 50 && p < 100 },
+  { key: '100to250',  label: '$100 – $250',   test: p => p >= 100 && p < 250 },
+  { key: '250plus',   label: '$250+',         test: p => p >= 250 },
+];
+const collapsedBands = new Set();
+
+const chevronSVG = `<svg class="price-band-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>`;
+
 function renderCards() {
   const grid    = document.getElementById('grid');
   const visible = visibleGifts();
@@ -830,30 +916,46 @@ function renderCards() {
     return;
   }
 
-  // group by set, ungrouped items first
-  const ungrouped = visible.filter(g => !g.set);
-  const grouped   = {};
-  visible.filter(g => g.set).forEach(g => {
-    (grouped[g.set] = grouped[g.set] || []).push(g);
-  });
+  // If a price filter is active, just render a flat list (band headers would be redundant)
+  if (filterPrice) {
+    grid.innerHTML = visible.map(g => cardHTML(g)).join('');
+    attachCardListeners();
+    return;
+  }
 
   let html = '';
-  ungrouped.forEach(g => { html += cardHTML(g); });
-  Object.entries(grouped).forEach(([setName, items]) => {
+  for (const band of PRICE_BANDS) {
+    const items = visible.filter(g => band.test(g.price || 0));
+    if (!items.length) continue;
+    const isCollapsed = collapsedBands.has(band.key);
     html += `
-      <div class="set-header">
-        <div class="set-header-line"></div>
-        <div class="set-header-label">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-          Gift Set — ${setName}
+      <div class="price-band${isCollapsed ? ' collapsed' : ''}" data-band="${band.key}">
+        <div class="price-band-header" data-band-toggle="${band.key}">
+          <div class="price-band-line"></div>
+          <span class="price-band-label">${band.label} <span style="opacity:.5;font-weight:400">(${items.length})</span></span>
+          ${chevronSVG}
+          <div class="price-band-line"></div>
         </div>
-        <div class="set-header-line"></div>
+        <div class="price-band-cards-wrap">
+          <div class="price-band-grid">
+            ${items.map(g => cardHTML(g)).join('')}
+          </div>
+        </div>
       </div>`;
-    items.forEach(g => { html += cardHTML(g); });
-  });
+  }
 
   grid.innerHTML = html;
   attachCardListeners();
+
+  // Band toggle listeners
+  grid.querySelectorAll('[data-band-toggle]').forEach(header => {
+    header.addEventListener('click', () => {
+      const key = header.dataset.bandToggle;
+      const band = header.closest('.price-band');
+      if (collapsedBands.has(key)) { collapsedBands.delete(key); band.classList.remove('collapsed'); }
+      else { collapsedBands.add(key); band.classList.add('collapsed'); }
+    });
+  });
 }
 
 function cardHTML(g) {
@@ -879,15 +981,18 @@ function cardHTML(g) {
       ${isOwner && remoteState.images[g.id] ? `<button class="card-img-remove-btn" data-action="remove-img" data-id="${g.id}" title="Remove custom image">✕</button>` : ''}
     </div>
     <div class="card-body">
-      <span class="card-category">${g.category}</span>
+      <div class="card-category-row">
+        <span class="card-category">${g.category}</span>
+        <button class="card-flag-inline ${isFlagged ? 'on' : ''}" data-action="flag" data-id="${g.id}" title="Report issue">🚩</button>
+      </div>
       <h2 class="card-name">${g.name}</h2>
       ${g.set ? `<span class="card-set-tag"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>${g.set}</span>` : ''}
       ${g.desc ? `<p class="card-desc">${g.desc}</p>` : ''}
       <div class="card-footer">
         ${formatPrice(g.price)}
         <div class="card-actions">
-          ${g.link ? `<a href="${g.link}" target="_blank" rel="noopener" class="btn btn-ghost btn-link" aria-label="View ${g.name}">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          ${g.link ? `<a href="${g.link}" target="_blank" rel="noopener" class="btn-view" aria-label="View ${g.name}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
             View
           </a>` : ''}
           ${isOwner
@@ -897,7 +1002,6 @@ function cardHTML(g) {
           ${isBought
             ? `<button class="btn btn-undo" data-action="undo" data-id="${g.id}">↩ Undo</button>`
             : `<button class="btn btn-primary" data-action="buy" data-id="${g.id}">🎀 I'll get this!</button>`}
-          <button class="btn btn-flag ${isFlagged ? 'on' : ''}" data-action="flag" data-id="${g.id}" title="Report issue">🚩</button>
           ${isOwner ? `<button class="btn btn-delete" data-action="delete" data-id="${g.id}" title="Delete gift">🗑</button>` : ''}
         </div>
       </div>
@@ -958,13 +1062,6 @@ function attachCardListeners() {
       e.stopPropagation();
       const id     = btn.dataset.id;
       const action = btn.dataset.action;
-
-      if (action === 'toggle-price') {
-        pricesHidden = !pricesHidden;
-        renderCards();
-        loadOgImages();
-        return;
-      }
 
       const gift = GIFTS.find(g => g.id === id);
       if (!gift) return;
