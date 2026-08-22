@@ -688,6 +688,27 @@ let remoteState = { bought: {}, starred: {}, flagged: {}, gifts: [] };
 
 const USE_LOCAL = (WORKER_URL === 'YOUR_WORKER_URL_HERE/progress');
 
+// Compress an image File to a small JPEG data URL (max ~20KB each)
+function compressImage(file) {
+  return new Promise(resolve => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const MAX = 400; // max dimension px — keeps each image ~15-25KB
+      let w = img.width, h = img.height;
+      if (w > h) { if (w > MAX) { h = Math.round(h * MAX / w); w = MAX; } }
+      else        { if (h > MAX) { w = Math.round(w * MAX / h); h = MAX; } }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      resolve(canvas.toDataURL('image/jpeg', 0.75));
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); resolve(null); };
+    img.src = url;
+  });
+}
+
 async function loadState() {
   if (USE_LOCAL) {
     try { remoteState = JSON.parse(localStorage.getItem('giftlist-state') || '{}'); } catch {}
@@ -881,14 +902,13 @@ function attachCardListeners() {
       const id   = input.dataset.id;
       const file = input.files[0];
       if (!file || !id) return;
-      const reader = new FileReader();
-      reader.onload = async ev => {
-        remoteState.images[id] = ev.target.result;
-        await saveState();
-        renderAll();
-        showToast('🖼️ Image saved!');
-      };
-      reader.readAsDataURL(file);
+      showToast('⏳ Compressing image…');
+      const dataUrl = await compressImage(file);
+      if (!dataUrl) { showToast('❌ Could not read image'); return; }
+      remoteState.images[id] = dataUrl;
+      await saveState();
+      renderAll();
+      showToast('🖼️ Image saved!');
     });
   });
 
